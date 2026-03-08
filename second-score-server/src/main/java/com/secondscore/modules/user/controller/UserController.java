@@ -32,8 +32,10 @@ public class UserController {
     private final SysUserService sysUserService;
 
     @GetMapping
-    public ApiResponse<List<UserVO>> list(@RequestParam(required = false) String keyword) {
-        return ApiResponse.success(sysUserService.listUsers(keyword));
+    public ApiResponse<List<UserVO>> list(@RequestParam(required = false) String keyword,
+                                          @RequestParam(required = false) String roleCode,
+                                          @RequestParam(required = false) Integer status) {
+        return ApiResponse.success(sysUserService.listUsers(keyword, roleCode, status));
     }
 
     @GetMapping("/roles")

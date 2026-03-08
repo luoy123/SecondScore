@@ -79,6 +79,24 @@ h6,
   font-size: 13px;
 }
 
+.query-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.stats-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.table-pagination {
+  margin-top: 12px;
+}
+
 .el-table {
   --el-table-header-bg-color: color-mix(in oklch, var(--brand-soft) 36%, white);
   --el-table-row-hover-bg-color: color-mix(in oklch, var(--brand-soft) 20%, white);

@@ -21,24 +21,40 @@
       </template>
     </el-alert>
 
-    <div class="page-card" style="padding: 12px; margin-bottom: 12px">
-      <el-space>
-        <el-input-number v-model="query.studentId" :min="1" placeholder="学生ID" />
-        <el-select v-model="query.termId" clearable placeholder="学期" style="width: 170px">
-          <el-option v-for="t in terms" :key="t.id" :label="t.termName" :value="t.id" />
-        </el-select>
-        <el-button @click="loadRecords">查询记录</el-button>
-      </el-space>
+    <div class="page-card query-toolbar">
+      <el-input-number v-model="query.studentId" :min="1" placeholder="学生ID" />
+      <el-input v-model="query.keyword" clearable placeholder="姓名/学号/活动名称" style="width: 220px" />
+      <el-select v-model="query.termId" clearable placeholder="学期" style="width: 170px">
+        <el-option v-for="t in terms" :key="t.id" :label="t.termName" :value="t.id" />
+      </el-select>
+      <el-select v-model="query.grantStatus" clearable placeholder="状态" style="width: 140px">
+        <el-option label="已发放" value="GRANTED" />
+        <el-option label="已撤销" value="REVOKED" />
+      </el-select>
+      <el-select v-model="query.activityId" clearable filterable placeholder="活动筛选" style="width: 220px">
+        <el-option v-for="a in activities" :key="a.id" :label="a.title" :value="a.id" />
+      </el-select>
+      <el-button type="primary" @click="loadRecords">查询记录</el-button>
+      <el-button @click="resetQuery">重置</el-button>
     </div>
 
-    <el-table :data="records" border stripe v-loading="loading">
+    <div class="stats-line">
+      <el-tag type="success">已发放 {{ grantedCount }}</el-tag>
+      <el-tag type="info">已撤销 {{ revokedCount }}</el-tag>
+    </div>
+
+    <el-table :data="filteredRecords" border stripe v-loading="loading">
       <el-table-column prop="studentName" label="学生" width="120" />
       <el-table-column prop="studentNo" label="学号" width="130" />
       <el-table-column prop="activityTitle" label="活动" min-width="170" />
       <el-table-column prop="categoryName" label="类别" width="120" />
       <el-table-column prop="termName" label="学期" width="130" />
       <el-table-column prop="credit" label="学分" width="90" />
-      <el-table-column prop="grantStatus" label="状态" width="110" />
+      <el-table-column prop="grantStatus" label="状态" width="110">
+        <template #default="scope">
+          <el-tag :type="scope.row.grantStatus === 'GRANTED' ? 'success' : 'info'">{{ scope.row.grantStatus }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="grantTime" label="发放时间" width="170">
         <template #default="scope">{{ formatDateTime(scope.row.grantTime) }}</template>
       </el-table-column>
@@ -53,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 import { listActivitiesApi, type ActivityItem } from '@/api/activity'
@@ -68,11 +84,39 @@ const grantResult = ref<CreditGrantResult>()
 
 const query = reactive({
   studentId: undefined as number | undefined,
-  termId: undefined as number | undefined
+  keyword: '',
+  termId: undefined as number | undefined,
+  grantStatus: '',
+  activityId: undefined as number | undefined
 })
 
 const loading = ref(false)
 const records = ref<CreditRecordItem[]>([])
+
+const filteredRecords = computed(() =>
+  records.value.filter((r) => {
+    const keyword = query.keyword.trim().toLowerCase()
+    const hitKeyword = !keyword
+      || (r.studentName || '').toLowerCase().includes(keyword)
+      || (r.studentNo || '').toLowerCase().includes(keyword)
+      || (r.activityTitle || '').toLowerCase().includes(keyword)
+    const hitStatus = !query.grantStatus || r.grantStatus === query.grantStatus
+    const hitActivity = !query.activityId || r.activityId === query.activityId
+    return hitKeyword && hitStatus && hitActivity
+  })
+)
+
+const grantedCount = computed(() => filteredRecords.value.filter((r) => r.grantStatus === 'GRANTED').length)
+const revokedCount = computed(() => filteredRecords.value.filter((r) => r.grantStatus === 'REVOKED').length)
+
+function resetQuery() {
+  query.studentId = undefined
+  query.keyword = ''
+  query.termId = undefined
+  query.grantStatus = ''
+  query.activityId = undefined
+  loadRecords()
+}
 
 async function loadBase() {
   const [activityData, termData] = await Promise.all([listActivitiesApi(), listTermsApi()])
@@ -123,5 +167,11 @@ onMounted(async () => {
   overflow: auto;
   font-size: 13px;
   color: var(--text-sub);
+}
+
+.stats-line {
+  margin: 10px 0;
+  display: flex;
+  gap: 8px;
 }
 </style>

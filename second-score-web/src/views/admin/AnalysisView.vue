@@ -6,6 +6,12 @@
         <el-select v-model="termId" clearable placeholder="选择学期" style="width: 200px" @change="loadCharts">
           <el-option v-for="t in terms" :key="t.id" :label="t.termName" :value="t.id" />
         </el-select>
+        <el-select v-model="topN" placeholder="排行数量" style="width: 130px" @change="loadCharts">
+          <el-option :value="5" label="Top 5" />
+          <el-option :value="10" label="Top 10" />
+          <el-option :value="20" label="Top 20" />
+        </el-select>
+        <el-switch v-model="includeZero" inline-prompt active-text="含零值" inactive-text="过滤零值" @change="loadCharts" />
         <el-button @click="loadAll">刷新数据</el-button>
       </el-space>
     </div>
@@ -39,7 +45,7 @@
         <div ref="categoryRef" class="chart"></div>
       </div>
       <div class="chart-card page-card full">
-        <div class="chart-title">活动参与排行 Top10</div>
+        <div class="chart-title">活动参与排行</div>
         <div ref="rankingRef" class="chart"></div>
       </div>
     </div>
@@ -55,6 +61,8 @@ import { listTermsApi, type TermItem } from '@/api/base'
 
 const termId = ref<number>()
 const terms = ref<TermItem[]>([])
+const topN = ref(10)
+const includeZero = ref(true)
 const dashboard = ref<DashboardData>({
   totalActivities: 0,
   totalSignups: 0,
@@ -75,57 +83,99 @@ async function loadAll() {
   await loadCharts()
 }
 
+function applyNoData(chart: echarts.ECharts, text: string) {
+  chart.setOption({
+    graphic: {
+      type: 'text',
+      left: 'center',
+      top: 'middle',
+      style: {
+        text,
+        fill: '#8b97ab',
+        fontSize: 14
+      }
+    }
+  })
+}
+
 async function loadCharts() {
   const [trend, category, ranking] = await Promise.all([
     getTermTrendApi(),
     getCategoryDistributionApi(termId.value),
-    getActivityRankingApi({ termId: termId.value, topN: 10 })
+    getActivityRankingApi({ termId: termId.value, topN: topN.value })
   ])
+
+  const categoryData = includeZero.value ? category : category.filter((i) => Number(i.totalCredit) > 0)
+  const rankingData = includeZero.value ? ranking : ranking.filter((i) => Number(i.participantCount) > 0)
 
   await nextTick()
 
   if (termTrendRef.value) {
     termTrendChart ??= echarts.init(termTrendRef.value)
     termTrendChart.setOption({
+      color: ['#2f7cf6'],
       tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: trend.map((i) => i.termName) },
-      yAxis: { type: 'value' },
+      grid: { left: 40, right: 18, top: 20, bottom: 36 },
+      xAxis: { type: 'category', data: trend.map((i) => i.termName), axisTick: { alignWithLabel: true } },
+      yAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#e7edf5' } } },
       series: [{
         type: 'line',
         smooth: true,
-        areaStyle: { opacity: 0.15 },
+        symbolSize: 8,
+        areaStyle: { opacity: 0.12 },
         data: trend.map((i) => i.totalCredit)
-      }]
+      }],
+      graphic: []
     })
   }
 
   if (categoryRef.value) {
     categoryChart ??= echarts.init(categoryRef.value)
-    categoryChart.setOption({
-      tooltip: { trigger: 'item' },
-      series: [{
-        type: 'pie',
-        radius: ['42%', '72%'],
-        data: category.map((i) => ({ name: i.categoryName, value: i.totalCredit }))
-      }]
-    })
+    if (!categoryData.length) {
+      categoryChart.clear()
+      applyNoData(categoryChart, '暂无类别学分数据')
+    } else {
+      categoryChart.setOption({
+        color: ['#2f7cf6', '#2db6a3', '#f6b93b', '#ff8a65', '#8c7ae6', '#00b894'],
+        tooltip: { trigger: 'item' },
+        legend: { bottom: 0 },
+        series: [{
+          type: 'pie',
+          radius: ['40%', '70%'],
+          center: ['50%', '44%'],
+          label: { formatter: '{b}\n{c}' },
+          data: categoryData.map((i) => ({ name: i.categoryName, value: i.totalCredit }))
+        }],
+        graphic: []
+      })
+    }
   }
 
   if (rankingRef.value) {
     rankingChart ??= echarts.init(rankingRef.value)
-    rankingChart.setOption({
-      tooltip: { trigger: 'axis' },
-      xAxis: { type: 'value' },
-      yAxis: {
-        type: 'category',
-        data: ranking.map((i) => i.activityTitle).reverse()
-      },
-      series: [{
-        type: 'bar',
-        data: ranking.map((i) => i.participantCount).reverse(),
-        label: { show: true, position: 'right' }
-      }]
-    })
+    if (!rankingData.length) {
+      rankingChart.clear()
+      applyNoData(rankingChart, '暂无活动参与数据')
+    } else {
+      rankingChart.setOption({
+        color: ['#2db6a3'],
+        tooltip: { trigger: 'axis' },
+        grid: { left: 120, right: 20, top: 20, bottom: 20 },
+        xAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#ecf0f5' } } },
+        yAxis: {
+          type: 'category',
+          data: rankingData.map((i) => i.activityTitle).reverse(),
+          axisLabel: { width: 210, overflow: 'truncate' }
+        },
+        series: [{
+          type: 'bar',
+          barMaxWidth: 22,
+          data: rankingData.map((i) => i.participantCount).reverse(),
+          label: { show: true, position: 'right' }
+        }],
+        graphic: []
+      })
+    }
   }
 }
 

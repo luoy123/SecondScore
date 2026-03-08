@@ -22,7 +22,7 @@ public interface SysUserService {
 
     UserVO getCurrentUserProfile(Long userId);
 
-    List<UserVO> listUsers(String keyword);
+    List<UserVO> listUsers(String keyword, String roleCode, Integer status);
 
     List<RoleVO> listRoles();
 

@@ -83,15 +83,27 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public List<UserVO> listUsers(String keyword) {
+    public List<UserVO> listUsers(String keyword, String roleCode, Integer status) {
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(keyword)) {
-            wrapper.like(SysUser::getUsername, keyword)
+            wrapper.and(w -> w.like(SysUser::getUsername, keyword)
                     .or()
                     .like(SysUser::getRealName, keyword)
                     .or()
-                    .like(SysUser::getStudentNo, keyword);
+                    .like(SysUser::getStudentNo, keyword));
         }
+        if (status != null) {
+            wrapper.eq(SysUser::getStatus, status);
+        }
+        if (StringUtils.hasText(roleCode)) {
+            SysRole role = sysRoleMapper.selectOne(new LambdaQueryWrapper<SysRole>()
+                    .eq(SysRole::getRoleCode, roleCode.trim().toUpperCase()));
+            if (role == null) {
+                return List.of();
+            }
+            wrapper.inSql(SysUser::getId, "SELECT user_id FROM sys_user_role WHERE role_id = " + role.getId());
+        }
+        wrapper.orderByAsc(SysUser::getId);
         List<SysUser> users = sysUserMapper.selectList(wrapper);
         List<UserVO> result = new ArrayList<>();
         for (SysUser user : users) {

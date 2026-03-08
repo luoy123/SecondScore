@@ -1,15 +1,43 @@
 <template>
-  <div class="page-shell">
+  <div class="page-shell user-manage">
     <div class="page-title">
       <h2 class="brand-font">用户管理</h2>
-      <el-space>
-        <el-input v-model="keyword" clearable placeholder="用户名/姓名/学号" style="width: 240px" />
-        <el-button type="primary" @click="loadUsers">查询</el-button>
-        <el-button type="success" @click="openCreate">新增用户</el-button>
-      </el-space>
+      <el-button type="success" @click="openCreate">新增用户</el-button>
     </div>
 
-    <el-table :data="users" border stripe v-loading="loading">
+    <div class="page-card query-toolbar">
+      <el-input v-model="query.keyword" clearable placeholder="用户名/姓名/学号" style="width: 240px" @keyup.enter="loadUsers" />
+      <el-select v-model="query.roleCode" clearable filterable placeholder="按角色筛选" style="width: 190px">
+        <el-option v-for="r in roles" :key="r.id" :label="`${r.roleName}（${r.roleCode}）`" :value="r.roleCode" />
+      </el-select>
+      <el-select v-model="query.status" clearable placeholder="按状态筛选" style="width: 150px">
+        <el-option label="启用" :value="1" />
+        <el-option label="停用" :value="0" />
+      </el-select>
+      <el-button type="primary" @click="loadUsers">查询</el-button>
+      <el-button @click="resetQuery">重置</el-button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stats-card page-card">
+        <span>当前结果</span>
+        <strong>{{ users.length }}</strong>
+      </div>
+      <div class="stats-card page-card">
+        <span>启用账号</span>
+        <strong>{{ activeCount }}</strong>
+      </div>
+      <div class="stats-card page-card">
+        <span>学生</span>
+        <strong>{{ studentCount }}</strong>
+      </div>
+      <div class="stats-card page-card">
+        <span>管理员</span>
+        <strong>{{ managerCount }}</strong>
+      </div>
+    </div>
+
+    <el-table :data="pagedUsers" border stripe v-loading="loading">
       <el-table-column label="用户" min-width="220">
         <template #default="{ row }">
           <div class="user-cell">
@@ -24,15 +52,17 @@
       <el-table-column prop="studentNo" label="学号" width="130" />
       <el-table-column prop="phone" label="电话" width="130" />
       <el-table-column prop="email" label="邮箱" min-width="180" />
-      <el-table-column label="角色" min-width="160">
+      <el-table-column label="角色" min-width="200">
         <template #default="scope">
-          <el-tag v-for="r in scope.row.roles" :key="r" style="margin-right: 4px">{{ r }}</el-tag>
+          <el-tag v-for="r in scope.row.roles" :key="r" class="role-tag">{{ roleNameByCode(r) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="90">
+      <el-table-column label="状态" width="110">
         <template #default="scope">
           <el-switch
             :model-value="scope.row.status === 1"
+            active-text="启用"
+            inactive-text="停用"
             @change="(v:boolean) => changeStatus(scope.row.id, v ? 1 : 0)"
           />
         </template>
@@ -44,6 +74,17 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <div class="table-pagination">
+      <el-pagination
+        v-model:current-page="pageNo"
+        v-model:page-size="pageSize"
+        background
+        layout="total, sizes, prev, pager, next"
+        :page-sizes="[10, 20, 50]"
+        :total="users.length"
+      />
+    </div>
 
     <el-dialog v-model="userDialog" :title="isCreate ? '新增用户' : '编辑用户'" width="720px" destroy-on-close>
       <el-form ref="userFormRef" :model="userForm" :rules="userRules" label-width="95px">
@@ -77,7 +118,7 @@
 
     <el-dialog v-model="roleDialog" title="分配角色" width="460px" destroy-on-close>
       <el-checkbox-group v-model="selectedRoleIds">
-        <el-checkbox v-for="r in roles" :key="r.id" :value="r.id">{{ r.roleName }}（{{ r.roleCode }}）</el-checkbox>
+        <el-checkbox v-for="r in roles" :key="r.id" :label="r.id">{{ r.roleName }}（{{ r.roleCode }}）</el-checkbox>
       </el-checkbox-group>
       <template #footer>
         <el-button @click="roleDialog = false">取消</el-button>
@@ -99,7 +140,23 @@ const saving = ref(false)
 const users = ref<UserItem[]>([])
 const roles = ref<RoleItem[]>([])
 
-const keyword = ref('')
+const query = reactive({
+  keyword: '',
+  roleCode: '',
+  status: undefined as number | undefined
+})
+
+const pageNo = ref(1)
+const pageSize = ref(10)
+
+const pagedUsers = computed(() => {
+  const start = (pageNo.value - 1) * pageSize.value
+  return users.value.slice(start, start + pageSize.value)
+})
+
+const activeCount = computed(() => users.value.filter((u) => u.status === 1).length)
+const studentCount = computed(() => users.value.filter((u) => u.roles.includes('STUDENT')).length)
+const managerCount = computed(() => users.value.filter((u) => u.roles.some((r) => r === 'SYSTEM_ADMIN' || r === 'ACTIVITY_ADMIN')).length)
 
 const colleges = ref<CollegeItem[]>([])
 const majors = ref<MajorItem[]>([])
@@ -134,6 +191,10 @@ const userRules: FormRules = {
   realName: [{ required: true, message: '请输入姓名', trigger: 'blur' }]
 }
 
+function roleNameByCode(roleCode: string) {
+  return roles.value.find((r) => r.roleCode === roleCode)?.roleName || roleCode
+}
+
 function resetUserForm() {
   userForm.username = ''
   userForm.password = '123456'
@@ -155,10 +216,22 @@ function onMajorChange() {
   userForm.classId = undefined
 }
 
+function resetQuery() {
+  query.keyword = ''
+  query.roleCode = ''
+  query.status = undefined
+  loadUsers()
+}
+
 async function loadUsers() {
   loading.value = true
   try {
-    users.value = await listUsersApi({ keyword: keyword.value || undefined })
+    users.value = await listUsersApi({
+      keyword: query.keyword || undefined,
+      roleCode: query.roleCode || undefined,
+      status: query.status
+    })
+    pageNo.value = 1
   } finally {
     loading.value = false
   }
@@ -261,6 +334,36 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.user-manage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stats-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stats-card {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stats-card span {
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.stats-card strong {
+  font-size: 28px;
+  color: var(--brand);
+  line-height: 1;
+}
+
 .user-cell {
   display: flex;
   align-items: center;
@@ -280,5 +383,21 @@ onMounted(async () => {
 .user-meta span {
   font-size: 12px;
   color: var(--text-sub);
+}
+
+.role-tag {
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.table-pagination {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1100px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>

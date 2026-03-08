@@ -60,6 +60,16 @@ E:/SecondScore/
 
 ## 4. 启动步骤
 
+### 4.0 导入扩展测试数据（推荐）
+
+```powershell
+cd E:\SecondScore
+mysql --default-character-set=utf8mb4 -h127.0.0.1 -uroot -p2004 second_score < sql\test_data.sql
+```
+
+- 该数据覆盖多角色、多活动、多状态，便于演示完整闭环与图表效果
+- 导入后请重启后端一次（应用启动会将明文初始密码自动转为 BCrypt）
+
 ### 4.1 启动后端
 
 ```powershell
@@ -114,6 +124,7 @@ npm run dev
 - 角色权限管理（新增角色、配置权限、菜单动态显示）
 - 登录验证码（Redis 存储，登录时强制校验）
 - 用户头像上传（个人头像上传并在顶部导航展示）
+- 列表筛选增强（用户按角色/状态筛选，报名/参与/学分页支持关键词与状态筛选）
 
 ## 6.1 RBAC 说明
 

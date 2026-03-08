@@ -22,7 +22,7 @@ export interface UserItem {
   roles: string[]
 }
 
-export function listUsersApi(params?: { keyword?: string }) {
+export function listUsersApi(params?: { keyword?: string; roleCode?: string; status?: number }) {
   return request.get<any, UserItem[]>('/users', { params })
 }
 
