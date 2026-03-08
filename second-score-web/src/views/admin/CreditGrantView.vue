@@ -4,7 +4,7 @@
       <h2 class="brand-font">学分发放</h2>
       <el-space>
         <el-select v-model="grantActivityId" filterable placeholder="选择活动后发放" style="width: 320px">
-          <el-option v-for="a in activities" :key="a.id" :label="`${a.title} (${a.status})`" :value="a.id" />
+          <el-option v-for="a in activities" :key="a.id" :label="`${a.title}（${activityStatusLabel(a.status)}）`" :value="a.id" />
         </el-select>
         <el-button type="primary" :disabled="!grantActivityId" @click="grant">一键发放</el-button>
       </el-space>
@@ -52,7 +52,7 @@
       <el-table-column prop="credit" label="学分" width="90" />
       <el-table-column prop="grantStatus" label="状态" width="110">
         <template #default="scope">
-          <el-tag :type="scope.row.grantStatus === 'GRANTED' ? 'success' : 'info'">{{ scope.row.grantStatus }}</el-tag>
+          <el-tag :type="scope.row.grantStatus === 'GRANTED' ? 'success' : 'info'">{{ grantStatusLabel(scope.row.grantStatus) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="grantTime" label="发放时间" width="170">
@@ -75,6 +75,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { listActivitiesApi, type ActivityItem } from '@/api/activity'
 import { listTermsApi, type TermItem } from '@/api/base'
 import { grantCreditByActivityApi, listCreditRecordsApi, revokeCreditApi, type CreditGrantResult, type CreditRecordItem } from '@/api/credit'
+import { activityStatusLabel, grantStatusLabel } from '@/utils/enumLabel'
 import { formatDateTime } from '@/utils/format'
 
 const activities = ref<ActivityItem[]>([])

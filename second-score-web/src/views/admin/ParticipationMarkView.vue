@@ -4,7 +4,7 @@
       <h2 class="brand-font">参与登记</h2>
       <el-space>
         <el-select v-model="activityId" filterable clearable placeholder="请选择活动" style="width: 320px" @change="loadData">
-          <el-option v-for="a in activities" :key="a.id" :label="`${a.title} (${a.status})`" :value="a.id" />
+          <el-option v-for="a in activities" :key="a.id" :label="`${a.title}（${activityStatusLabel(a.status)}）`" :value="a.id" />
         </el-select>
         <el-button @click="loadData" :disabled="!activityId">刷新</el-button>
         <el-button type="primary" :disabled="!activityId || rows.length === 0" @click="submitMarks">提交登记</el-button>
@@ -60,6 +60,7 @@ import { ElMessage } from 'element-plus'
 
 import { listActivitiesApi, type ActivityItem } from '@/api/activity'
 import { listActivitySignupsApi, listParticipationApi, markParticipationApi } from '@/api/signup'
+import { activityStatusLabel } from '@/utils/enumLabel'
 import { formatDateTime } from '@/utils/format'
 
 interface MarkRow {

@@ -23,7 +23,9 @@
       <el-table-column prop="termName" label="学期" width="130" />
       <el-table-column prop="organizerName" label="负责人" width="120" />
       <el-table-column prop="credit" label="学分" width="90" />
-      <el-table-column prop="status" label="状态" width="120" />
+      <el-table-column prop="status" label="状态" width="120">
+        <template #default="scope">{{ activityStatusLabel(scope.row.status) }}</template>
+      </el-table-column>
       <el-table-column label="活动时间" min-width="170">
         <template #default="scope">{{ formatDateTime(scope.row.startTime) }} ~ {{ formatDateTime(scope.row.endTime) }}</template>
       </el-table-column>
@@ -83,6 +85,7 @@ import { createActivityApi, finishActivityApi, listActivitiesApi, publishActivit
 import { listCategoriesApi, listTermsApi, type CategoryItem, type TermItem } from '@/api/base'
 import { listUsersApi, type UserItem } from '@/api/user'
 import { useAuthStore } from '@/stores/auth'
+import { activityStatusLabel } from '@/utils/enumLabel'
 import { formatDateTime } from '@/utils/format'
 
 const authStore = useAuthStore()

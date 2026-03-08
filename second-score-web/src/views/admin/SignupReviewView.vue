@@ -4,7 +4,7 @@
       <h2 class="brand-font">报名审核</h2>
       <el-space>
         <el-select v-model="activityId" filterable clearable placeholder="请选择活动" style="width: 320px" @change="loadSignups">
-          <el-option v-for="a in activities" :key="a.id" :label="`${a.title} (${a.status})`" :value="a.id" />
+          <el-option v-for="a in activities" :key="a.id" :label="`${a.title}（${activityStatusLabel(a.status)}）`" :value="a.id" />
         </el-select>
         <el-button @click="loadSignups" :disabled="!activityId">刷新</el-button>
       </el-space>
@@ -39,16 +39,16 @@
         <el-table-column prop="applyTime" label="报名时间" width="170">
           <template #default="scope">{{ formatDateTime(scope.row.applyTime) }}</template>
         </el-table-column>
-        <el-table-column prop="reviewStatus" label="审核状态" width="120">
-          <template #default="scope">
-            <el-tag :type="tagType(scope.row.reviewStatus)">{{ scope.row.reviewStatus }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="signupStatus" label="报名状态" width="110">
-          <template #default="scope">
-            <el-tag :type="scope.row.signupStatus === 'ACTIVE' ? 'success' : 'info'">{{ scope.row.signupStatus }}</el-tag>
-          </template>
-        </el-table-column>
+      <el-table-column prop="reviewStatus" label="审核状态" width="120">
+        <template #default="scope">
+          <el-tag :type="tagType(scope.row.reviewStatus)">{{ reviewStatusLabel(scope.row.reviewStatus) }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="signupStatus" label="报名状态" width="110">
+        <template #default="scope">
+          <el-tag :type="scope.row.signupStatus === 'ACTIVE' ? 'success' : 'info'">{{ signupStatusLabel(scope.row.signupStatus) }}</el-tag>
+        </template>
+      </el-table-column>
         <el-table-column prop="reviewerName" label="审核人" width="110" />
         <el-table-column prop="reviewTime" label="审核时间" width="170">
           <template #default="scope">{{ formatDateTime(scope.row.reviewTime) }}</template>
@@ -71,6 +71,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 import { listActivitiesApi, type ActivityItem } from '@/api/activity'
 import { approveSignupApi, listActivitySignupsApi, rejectSignupApi, type SignupItem } from '@/api/signup'
+import { activityStatusLabel, reviewStatusLabel, signupStatusLabel } from '@/utils/enumLabel'
 import { formatDateTime } from '@/utils/format'
 
 const activities = ref<ActivityItem[]>([])

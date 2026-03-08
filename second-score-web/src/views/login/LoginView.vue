@@ -7,9 +7,9 @@
 
     <section class="login-card page-card">
       <div class="card-head">
-        <p class="brand-font small">Graduation Project Demo</p>
-        <h1 class="brand-font">第二课堂学分统计与分析系统</h1>
-        <span>活动发布、报名审核、学分发放与统计分析</span>
+        <p class="brand-font small">高校第二课堂管理系统</p>
+        <h1 class="brand-font">第二课堂学分统计与分析平台</h1>
+        <span>统一完成活动发布、报名审核、参与登记、学分认定与数据分析</span>
       </div>
 
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @keyup.enter="onSubmit">
@@ -38,9 +38,6 @@
         <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onSubmit">登录系统</el-button>
       </el-form>
 
-      <footer class="tips">
-        <span>默认账号：admin / actadmin / stu01（默认密码：123456）</span>
-      </footer>
     </section>
   </div>
 </template>
@@ -64,8 +61,8 @@ const captchaImage = ref('')
 const formRef = ref<FormInstance>()
 
 const form = reactive({
-  username: 'admin',
-  password: '123456',
+  username: '',
+  password: '',
   captchaCode: '',
   captchaId: ''
 })
@@ -232,12 +229,6 @@ onMounted(() => {
   width: 100%;
   margin-top: 6px;
   border-radius: 12px;
-}
-
-.tips {
-  margin-top: 14px;
-  color: var(--text-sub);
-  font-size: 12px;
 }
 
 @media (max-width: 520px) {

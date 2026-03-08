@@ -33,6 +33,7 @@
           <h1 class="brand-font">{{ currentTitle }}</h1>
         </div>
         <div class="right-actions">
+          <el-button type="primary" plain @click="goProfile">个人中心</el-button>
           <el-upload
             class="avatar-upload"
             :show-file-list="false"
@@ -80,7 +81,7 @@ const activePath = computed(() => route.path)
 
 const currentTitle = computed(() => {
   const current = menuRoutes.value.find((item) => item.path === route.path)
-  return current?.meta.title || '第二课堂学分系统'
+  return current?.meta.title || '第二课堂学分统计与分析平台'
 })
 
 const roleText = computed(() => {
@@ -125,6 +126,10 @@ async function handleAvatarUpload(options: UploadRequestOptions) {
 function onLogout() {
   authStore.logout()
   router.replace('/login')
+}
+
+function goProfile() {
+  router.push('/profile')
 }
 </script>
 

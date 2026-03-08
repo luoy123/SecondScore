@@ -2,6 +2,7 @@ package com.secondscore.modules.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.secondscore.common.exception.BusinessException;
+import com.secondscore.modules.user.dto.ProfileUpdateRequest;
 import com.secondscore.modules.user.dto.RoleSaveRequest;
 import com.secondscore.modules.user.dto.UserCreateRequest;
 import com.secondscore.modules.user.dto.UserUpdateRequest;
@@ -158,6 +159,20 @@ public class SysUserServiceImpl implements SysUserService {
         update.setCollegeId(request.getCollegeId());
         update.setMajorId(request.getMajorId());
         update.setClassId(request.getClassId());
+        sysUserMapper.updateById(update);
+    }
+
+    @Override
+    public void updateSelfProfile(Long userId, ProfileUpdateRequest request) {
+        SysUser existed = getById(userId);
+        if (existed == null) {
+            throw new BusinessException(404, "用户不存在");
+        }
+        SysUser update = new SysUser();
+        update.setId(userId);
+        update.setRealName(request.getRealName().trim());
+        update.setPhone(StringUtils.hasText(request.getPhone()) ? request.getPhone().trim() : null);
+        update.setEmail(StringUtils.hasText(request.getEmail()) ? request.getEmail().trim() : null);
         sysUserMapper.updateById(update);
     }
 

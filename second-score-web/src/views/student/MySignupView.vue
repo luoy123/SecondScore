@@ -6,7 +6,7 @@
     </div>
 
     <div class="page-card query-toolbar">
-      <el-input v-model="query.keyword" clearable placeholder="活动名称/学号" style="width: 240px" />
+      <el-input v-model="query.keyword" clearable placeholder="活动名称/活动ID" style="width: 240px" />
       <el-select v-model="query.reviewStatus" clearable placeholder="审核状态" style="width: 150px">
         <el-option label="待审核" value="PENDING" />
         <el-option label="已通过" value="APPROVED" />
@@ -29,12 +29,12 @@
       </el-table-column>
       <el-table-column prop="reviewStatus" label="审核状态" width="120">
         <template #default="scope">
-          <el-tag :type="tagType(scope.row.reviewStatus)">{{ scope.row.reviewStatus }}</el-tag>
+          <el-tag :type="tagType(scope.row.reviewStatus)">{{ reviewStatusLabel(scope.row.reviewStatus) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="signupStatus" label="报名状态" width="120">
         <template #default="scope">
-          <el-tag :type="scope.row.signupStatus === 'ACTIVE' ? 'success' : 'info'">{{ scope.row.signupStatus }}</el-tag>
+          <el-tag :type="scope.row.signupStatus === 'ACTIVE' ? 'success' : 'info'">{{ signupStatusLabel(scope.row.signupStatus) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="reviewerName" label="审核人" width="120" />
@@ -62,6 +62,7 @@ import { ElMessageBox, ElMessage } from 'element-plus'
 
 import { listActivitiesApi, type ActivityItem } from '@/api/activity'
 import { cancelMySignupApi, listMySignupsApi, type SignupItem } from '@/api/signup'
+import { reviewStatusLabel, signupStatusLabel } from '@/utils/enumLabel'
 import { formatDateTime } from '@/utils/format'
 
 const loading = ref(false)

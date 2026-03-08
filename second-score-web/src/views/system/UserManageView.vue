@@ -92,13 +92,13 @@
           <el-col :span="12"><el-form-item label="用户名" prop="username"><el-input v-model="userForm.username" :disabled="!isCreate" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="姓名" prop="realName"><el-input v-model="userForm.realName" /></el-form-item></el-col>
         </el-row>
-        <el-row :gutter="12" v-if="isCreate">
-          <el-col :span="12"><el-form-item label="密码" prop="password"><el-input v-model="userForm.password" show-password /></el-form-item></el-col>
+        <el-row :gutter="12">
           <el-col :span="12"><el-form-item label="学号"><el-input v-model="userForm.studentNo" /></el-form-item></el-col>
-        </el-row>
-        <el-row :gutter="12" v-else>
-          <el-col :span="12"><el-form-item label="学号"><el-input v-model="userForm.studentNo" /></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="电话"><el-input v-model="userForm.phone" /></el-form-item></el-col>
+          <el-col :span="12" v-if="isCreate">
+            <el-form-item label="初始密码" prop="password">
+              <el-input v-model="userForm.password" show-password placeholder="至少 6 位" />
+            </el-form-item>
+          </el-col>
         </el-row>
         <el-row :gutter="12">
           <el-col :span="12"><el-form-item label="电话"><el-input v-model="userForm.phone" /></el-form-item></el-col>
@@ -175,7 +175,7 @@ const userFormRef = ref<FormInstance>()
 
 const userForm = reactive({
   username: '',
-  password: '123456',
+  password: '',
   realName: '',
   studentNo: '',
   phone: '',
@@ -187,7 +187,10 @@ const userForm = reactive({
 
 const userRules: FormRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  password: [
+    { required: true, message: '请输入初始密码', trigger: 'blur' },
+    { min: 6, message: '初始密码至少 6 位', trigger: 'blur' }
+  ],
   realName: [{ required: true, message: '请输入姓名', trigger: 'blur' }]
 }
 
@@ -197,7 +200,7 @@ function roleNameByCode(roleCode: string) {
 
 function resetUserForm() {
   userForm.username = ''
-  userForm.password = '123456'
+  userForm.password = ''
   userForm.realName = ''
   userForm.studentNo = ''
   userForm.phone = ''
@@ -261,6 +264,7 @@ function openEdit(row: UserItem) {
   isCreate.value = false
   editingUserId.value = row.id
   userForm.username = row.username
+  userForm.password = ''
   userForm.realName = row.realName
   userForm.studentNo = row.studentNo || ''
   userForm.phone = row.phone || ''

@@ -2,6 +2,7 @@ package com.secondscore.modules.user.service;
 
 import com.secondscore.modules.user.dto.UserCreateRequest;
 import com.secondscore.modules.user.dto.RoleSaveRequest;
+import com.secondscore.modules.user.dto.ProfileUpdateRequest;
 import com.secondscore.modules.user.dto.UserUpdateRequest;
 import com.secondscore.modules.user.entity.SysUser;
 import com.secondscore.modules.user.vo.PermissionVO;
@@ -33,6 +34,8 @@ public interface SysUserService {
     void updateStatus(Long userId, Integer status);
 
     void assignRoles(Long userId, List<Long> roleIds);
+
+    void updateSelfProfile(Long userId, ProfileUpdateRequest request);
 
     Long createRole(RoleSaveRequest request);
 

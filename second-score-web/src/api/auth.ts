@@ -67,3 +67,11 @@ export function uploadAvatarApi(file: File) {
     }
   })
 }
+
+export function getProfileApi() {
+  return request.get<any, UserProfile>('/profile')
+}
+
+export function updateProfileApi(data: { realName: string; phone?: string; email?: string }) {
+  return request.put('/profile', data)
+}

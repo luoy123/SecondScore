@@ -75,6 +75,12 @@ export const appRoutes: AppRouteRecord[] = [
     name: 'RoleManage',
     component: () => import('@/views/system/RoleManageView.vue'),
     meta: { title: '角色权限', icon: 'Key', perm: 'menu:system:roles' }
+  },
+  {
+    path: '/profile',
+    name: 'ProfileCenter',
+    component: () => import('@/views/common/ProfileCenterView.vue'),
+    meta: { title: '个人中心', icon: 'UserFilled' }
   }
 ]
 

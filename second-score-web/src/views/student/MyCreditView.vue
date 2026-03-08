@@ -35,7 +35,7 @@
       <el-table-column prop="credit" label="学分" width="90" />
       <el-table-column prop="grantStatus" label="状态" width="120">
         <template #default="scope">
-          <el-tag :type="scope.row.grantStatus === 'GRANTED' ? 'success' : 'info'">{{ scope.row.grantStatus }}</el-tag>
+          <el-tag :type="scope.row.grantStatus === 'GRANTED' ? 'success' : 'info'">{{ grantStatusLabel(scope.row.grantStatus) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="grantTime" label="发放时间" width="170">
@@ -51,6 +51,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 
 import { getPersonalCreditSummaryApi, listCreditRecordsApi, type CreditRecordItem, type PersonalCreditSummary } from '@/api/credit'
 import { listTermsApi, type TermItem } from '@/api/base'
+import { grantStatusLabel } from '@/utils/enumLabel'
 import { formatDateTime } from '@/utils/format'
 
 const loading = ref(false)
