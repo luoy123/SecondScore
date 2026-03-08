@@ -27,9 +27,17 @@
           {{ formatDateTime(scope.row.signupStart) }} ~ {{ formatDateTime(scope.row.signupEnd) }}
         </template>
       </el-table-column>
-      <el-table-column label="名额" width="130">
+      <el-table-column label="名额" width="170">
         <template #default="scope">
-          {{ scope.row.signupCount || 0 }}/{{ scope.row.capacity }}
+          <div class="capacity-wrap">
+            <div class="capacity-text">{{ scope.row.signupCount || 0 }}/{{ scope.row.capacity }}</div>
+            <el-progress
+              :percentage="capacityPercent(scope.row)"
+              :show-text="false"
+              :stroke-width="8"
+              :color="capacityColor(scope.row)"
+            />
+          </div>
         </template>
       </el-table-column>
       <el-table-column prop="credit" label="学分" width="90" />
@@ -85,7 +93,32 @@ async function loadTerms() {
   terms.value = await listTermsApi()
 }
 
+function capacityPercent(row: ActivityItem) {
+  const capacity = Number(row.capacity || 0)
+  if (!capacity) return 0
+  return Math.min(100, Math.round((Number(row.signupCount || 0) / capacity) * 100))
+}
+
+function capacityColor(row: ActivityItem) {
+  const ratio = capacityPercent(row)
+  if (ratio >= 95) return '#d44d5c'
+  if (ratio >= 75) return '#e8a03f'
+  return '#2db6a3'
+}
+
 onMounted(async () => {
   await Promise.all([loadTerms(), loadActivities()])
 })
 </script>
+
+<style scoped>
+.capacity-wrap {
+  min-width: 124px;
+}
+
+.capacity-text {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-bottom: 4px;
+}
+</style>

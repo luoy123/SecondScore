@@ -52,7 +52,11 @@
       </header>
 
       <section class="content-wrap page-card">
-        <router-view />
+        <router-view v-slot="{ Component, route: currentRoute }">
+          <transition name="route-fade-slide" mode="out-in">
+            <component :is="Component" :key="currentRoute.fullPath" />
+          </transition>
+        </router-view>
       </section>
     </main>
   </div>
@@ -147,6 +151,7 @@ function goProfile() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: lift-in 0.46s var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .brand {
@@ -206,6 +211,8 @@ function goProfile() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  animation: lift-in 0.5s var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation-delay: 0.04s;
 }
 
 .left-actions {
@@ -246,10 +253,42 @@ function goProfile() {
 .content-wrap {
   min-height: calc(100vh - 120px);
   overflow: auto;
+  animation: lift-in 0.56s var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation-delay: 0.08s;
 }
 
 .mobile-only {
   display: none;
+}
+
+.route-fade-slide-enter-active {
+  transition: opacity 0.28s var(--ease-out-quart, cubic-bezier(0.25, 1, 0.5, 1)),
+    transform 0.28s var(--ease-out-quart, cubic-bezier(0.25, 1, 0.5, 1));
+}
+
+.route-fade-slide-leave-active {
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+}
+
+.route-fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.route-fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+@keyframes lift-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 1024px) {
@@ -274,6 +313,19 @@ function goProfile() {
 
   .mobile-only {
     display: inline-flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .topbar,
+  .content-wrap {
+    animation: none;
+  }
+
+  .route-fade-slide-enter-active,
+  .route-fade-slide-leave-active {
+    transition: none;
   }
 }
 </style>

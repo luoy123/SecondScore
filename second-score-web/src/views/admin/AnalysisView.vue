@@ -19,19 +19,19 @@
     <div class="metric-grid">
       <div class="metric-card page-card">
         <span>活动总数</span>
-        <strong>{{ dashboard.totalActivities || 0 }}</strong>
+        <strong>{{ metricDisplay.totalActivities }}</strong>
       </div>
       <div class="metric-card page-card">
         <span>报名总数</span>
-        <strong>{{ dashboard.totalSignups || 0 }}</strong>
+        <strong>{{ metricDisplay.totalSignups }}</strong>
       </div>
       <div class="metric-card page-card">
         <span>发放学分总量</span>
-        <strong>{{ dashboard.totalGrantedCredit || 0 }}</strong>
+        <strong>{{ metricDisplay.totalGrantedCredit }}</strong>
       </div>
       <div class="metric-card page-card">
         <span>获得学分人数</span>
-        <strong>{{ dashboard.totalCreditedStudents || 0 }}</strong>
+        <strong>{{ metricDisplay.totalCreditedStudents }}</strong>
       </div>
     </div>
 
@@ -69,6 +69,12 @@ const dashboard = ref<DashboardData>({
   totalGrantedCredit: 0,
   totalCreditedStudents: 0
 })
+const metricDisplay = ref({
+  totalActivities: 0,
+  totalSignups: 0,
+  totalGrantedCredit: 0,
+  totalCreditedStudents: 0
+})
 
 const termTrendRef = ref<HTMLDivElement>()
 const categoryRef = ref<HTMLDivElement>()
@@ -77,10 +83,50 @@ const rankingRef = ref<HTMLDivElement>()
 let termTrendChart: echarts.ECharts | null = null
 let categoryChart: echarts.ECharts | null = null
 let rankingChart: echarts.ECharts | null = null
+let metricAnimationFrame = 0
 
 async function loadAll() {
   dashboard.value = await getDashboardApi()
+  animateDashboard(dashboard.value)
   await loadCharts()
+}
+
+function animateDashboard(target: DashboardData) {
+  const start = {
+    totalActivities: Number(metricDisplay.value.totalActivities || 0),
+    totalSignups: Number(metricDisplay.value.totalSignups || 0),
+    totalGrantedCredit: Number(metricDisplay.value.totalGrantedCredit || 0),
+    totalCreditedStudents: Number(metricDisplay.value.totalCreditedStudents || 0)
+  }
+  const end = {
+    totalActivities: Number(target.totalActivities || 0),
+    totalSignups: Number(target.totalSignups || 0),
+    totalGrantedCredit: Number(target.totalGrantedCredit || 0),
+    totalCreditedStudents: Number(target.totalCreditedStudents || 0)
+  }
+  const duration = 680
+  const startAt = performance.now()
+  cancelAnimationFrame(metricAnimationFrame)
+
+  const tick = (now: number) => {
+    const progress = Math.min((now - startAt) / duration, 1)
+    const eased = 1 - (1 - progress) ** 4
+
+    metricDisplay.value.totalActivities = Math.round(start.totalActivities + (end.totalActivities - start.totalActivities) * eased)
+    metricDisplay.value.totalSignups = Math.round(start.totalSignups + (end.totalSignups - start.totalSignups) * eased)
+    metricDisplay.value.totalGrantedCredit = Number(
+      (start.totalGrantedCredit + (end.totalGrantedCredit - start.totalGrantedCredit) * eased).toFixed(2)
+    )
+    metricDisplay.value.totalCreditedStudents = Math.round(
+      start.totalCreditedStudents + (end.totalCreditedStudents - start.totalCreditedStudents) * eased
+    )
+
+    if (progress < 1) {
+      metricAnimationFrame = requestAnimationFrame(tick)
+    }
+  }
+
+  metricAnimationFrame = requestAnimationFrame(tick)
 }
 
 function applyNoData(chart: echarts.ECharts, text: string) {
@@ -193,6 +239,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', resizeCharts)
+  cancelAnimationFrame(metricAnimationFrame)
   termTrendChart?.dispose()
   categoryChart?.dispose()
   rankingChart?.dispose()
@@ -212,6 +259,19 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  animation: card-rise 0.54s var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.metric-card:nth-child(2) {
+  animation-delay: 0.06s;
+}
+
+.metric-card:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.metric-card:nth-child(4) {
+  animation-delay: 0.18s;
 }
 
 .metric-card span {
@@ -245,6 +305,17 @@ onBeforeUnmount(() => {
 
 .chart {
   height: 340px;
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 1100px) {

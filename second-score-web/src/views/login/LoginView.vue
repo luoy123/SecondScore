@@ -1,5 +1,5 @@
 <template>
-  <div class="login-page">
+  <div class="login-page" :class="{ mounted: pageReady }">
     <div class="bg-image"></div>
     <div class="bg-mask"></div>
     <div class="decor decor-left"></div>
@@ -32,7 +32,14 @@
               <img v-if="captchaImage" :src="captchaImage" alt="captcha" />
               <span v-else>加载中</span>
             </button>
-            <el-button circle :icon="RefreshRight" :disabled="captchaLoading" @click="refreshCaptcha" />
+            <el-button
+              circle
+              :icon="RefreshRight"
+              class="captcha-refresh"
+              :class="{ rotating: captchaLoading }"
+              :disabled="captchaLoading"
+              @click="refreshCaptcha"
+            />
           </div>
         </el-form-item>
         <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onSubmit">登录系统</el-button>
@@ -43,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { nextTick, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { RefreshRight } from '@element-plus/icons-vue'
@@ -58,6 +65,7 @@ const authStore = useAuthStore()
 const loading = ref(false)
 const captchaLoading = ref(false)
 const captchaImage = ref('')
+const pageReady = ref(false)
 const formRef = ref<FormInstance>()
 
 const form = reactive({
@@ -106,8 +114,10 @@ async function onSubmit() {
   }
 }
 
-onMounted(() => {
-  refreshCaptcha()
+onMounted(async () => {
+  await refreshCaptcha()
+  await nextTick()
+  pageReady.value = true
 })
 </script>
 
@@ -131,6 +141,7 @@ onMounted(() => {
   background-position: center;
   transform: scale(1.04);
   z-index: 0;
+  animation: background-pan 22s var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) infinite alternate;
 }
 
 .bg-mask {
@@ -153,6 +164,7 @@ onMounted(() => {
   background: color-mix(in oklch, var(--brand) 24%, white);
   left: -90px;
   top: -80px;
+  animation: float-shift 7.5s ease-in-out infinite;
 }
 
 .decor-right {
@@ -161,6 +173,7 @@ onMounted(() => {
   background: color-mix(in oklch, var(--accent) 20%, white);
   right: -120px;
   bottom: -120px;
+  animation: float-shift 9s ease-in-out infinite reverse;
 }
 
 .login-card {
@@ -169,10 +182,43 @@ onMounted(() => {
   padding: clamp(18px, 3.2vw, 34px);
   backdrop-filter: blur(5px);
   border-color: color-mix(in oklch, var(--line) 55%, white);
+  opacity: 0;
+  transform: translateY(16px) scale(0.985);
+  transition: opacity 0.55s var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)),
+    transform 0.55s var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.mounted .login-card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .card-head {
   margin-bottom: 18px;
+}
+
+.card-head > * {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.42s var(--ease-out-quart, cubic-bezier(0.25, 1, 0.5, 1)),
+    transform 0.42s var(--ease-out-quart, cubic-bezier(0.25, 1, 0.5, 1));
+}
+
+.mounted .card-head > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mounted .card-head > *:nth-child(1) {
+  transition-delay: 0.1s;
+}
+
+.mounted .card-head > *:nth-child(2) {
+  transition-delay: 0.18s;
+}
+
+.mounted .card-head > *:nth-child(3) {
+  transition-delay: 0.26s;
 }
 
 .card-head .small {
@@ -210,6 +256,10 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.captcha-image:hover {
+  border-color: color-mix(in oklch, var(--brand) 30%, var(--line));
+}
+
 .captcha-image img {
   width: 100%;
   height: 100%;
@@ -229,6 +279,44 @@ onMounted(() => {
   width: 100%;
   margin-top: 6px;
   border-radius: 12px;
+}
+
+.submit-btn:hover {
+  transform: translateY(-1px);
+}
+
+.captcha-refresh.rotating {
+  animation: spin-rotate 0.9s linear infinite;
+}
+
+@keyframes float-shift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes background-pan {
+  from {
+    transform: scale(1.04) translateX(0);
+  }
+  to {
+    transform: scale(1.09) translateX(-1.4%);
+  }
+}
+
+@keyframes spin-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 520px) {
