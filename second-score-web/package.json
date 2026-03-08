@@ -1,0 +1,27 @@
+{
+  "name": "second-score-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.config.ts --configLoader native",
+    "build": "vue-tsc --noEmit && vite build --config vite.config.ts --configLoader native",
+    "preview": "vite preview --config vite.config.ts --configLoader native"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.8.4",
+    "echarts": "^5.6.0",
+    "element-plus": "^2.9.7",
+    "pinia": "^2.3.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.11",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0",
+    "vue-tsc": "^2.2.8"
+  }
+}

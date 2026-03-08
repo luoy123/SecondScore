@@ -1,0 +1,29 @@
+.ace-tool/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Java
+**/target/
+**/*.log
+second-score-server/.m2/
+second-score-server/java-run.args
+
+# Node
+**/node_modules/
+**/dist/
+**/.vite/
+**/*.tsbuildinfo
+second-score-web/vite.config.js
+second-score-web/vite.config.d.ts
+
+# Runtime uploads
+uploads/
+
+# Temp
+*.tmp
+*.swp
+tmpjavac*/

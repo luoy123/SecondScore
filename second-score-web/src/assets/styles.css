@@ -1,0 +1,96 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap");
+
+:root {
+  --bg-main: oklch(0.98 0.01 210);
+  --bg-soft: oklch(0.95 0.02 210);
+  --surface: oklch(0.995 0.01 95);
+  --surface-muted: oklch(0.97 0.015 210);
+  --text-main: oklch(0.22 0.03 225);
+  --text-sub: oklch(0.45 0.02 220);
+  --brand: oklch(0.58 0.16 205);
+  --brand-soft: oklch(0.87 0.06 205);
+  --accent: oklch(0.69 0.14 75);
+  --line: oklch(0.9 0.015 220);
+  --danger: oklch(0.6 0.19 24);
+  --shadow: 0 16px 40px oklch(0.55 0.05 225 / 0.14);
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 12% 20%, color-mix(in oklch, var(--brand) 14%, white), transparent 35%),
+    radial-gradient(circle at 85% 12%, color-mix(in oklch, var(--accent) 12%, white), transparent 34%),
+    linear-gradient(160deg, var(--bg-main), var(--bg-soft));
+  text-rendering: geometricPrecision;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.brand-font {
+  font-family: "Outfit", "Noto Sans SC", sans-serif;
+}
+
+.page-shell {
+  padding: clamp(14px, 2vw, 26px);
+}
+
+.page-card {
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.22s ease, transform 0.22s ease;
+}
+
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.page-title h2 {
+  margin: 0;
+  font-size: clamp(20px, 2.1vw, 28px);
+  letter-spacing: 0.3px;
+}
+
+.tip-text {
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.el-table {
+  --el-table-header-bg-color: color-mix(in oklch, var(--brand-soft) 36%, white);
+  --el-table-row-hover-bg-color: color-mix(in oklch, var(--brand-soft) 20%, white);
+}
+
+.el-button--primary {
+  --el-button-bg-color: color-mix(in oklch, var(--brand) 92%, black);
+  --el-button-border-color: color-mix(in oklch, var(--brand) 92%, black);
+}
+
+@media (max-width: 900px) {
+  .page-shell {
+    padding: 12px;
+  }
+}
